@@ -22,8 +22,15 @@ export default async function decorate(block) {
   header.className = 'crawler-header';
   header.innerHTML = `
     <h3>Website Crawler</h3>
-    <p>Target Domain: <strong>${targetDomain}</strong></p>
-    <button class="start-crawl-btn">Start Crawling</button>
+    <div class="domain-input-section">
+      <label for="domain-input">Enter Website Domain:</label>
+      <div class="input-group">
+        <input type="text" id="domain-input" class="domain-input" placeholder="https://example.com" value="${targetDomain}">
+        <button class="validate-btn">Validate & Check EDS</button>
+      </div>
+      <div class="validation-result" style="display: none;"></div>
+    </div>
+    <button class="start-crawl-btn" disabled>Start Crawling</button>
   `;
   
   const progressContainer = document.createElement('div');
@@ -52,7 +59,7 @@ export default async function decorate(block) {
   // Crawler implementation
   class WebsiteCrawler {
     constructor(domain) {
-      this.domain = this.normalizeDomain(domain);
+      this.domain = WebsiteCrawler.normalizeDomain(domain);
       this.baseUrl = new URL(this.domain);
       this.internalLinks = new Set();
       this.externalLinks = new Set();
@@ -62,11 +69,12 @@ export default async function decorate(block) {
       this.isRunning = false;
     }
     
-    normalizeDomain(domain) {
-      if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
-        domain = 'https://' + domain;
+    static normalizeDomain(domain) {
+      let normalizedDomain = domain;
+      if (!normalizedDomain.startsWith('http://') && !normalizedDomain.startsWith('https://')) {
+        normalizedDomain = `https://${normalizedDomain}`;
       }
-      return domain.endsWith('/') ? domain.slice(0, -1) : domain;
+      return normalizedDomain.endsWith('/') ? normalizedDomain.slice(0, -1) : normalizedDomain;
     }
     
     isInternalUrl(url) {
@@ -454,12 +462,12 @@ export default async function decorate(block) {
             filename = 'crawl-results.json';
           }
           
-          this.downloadFile(data, filename);
+          WebsiteCrawler.downloadFile(data, filename);
         });
       });
     }
     
-    downloadFile(content, filename) {
+    static downloadFile(content, filename) {
       const blob = new Blob([content], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -471,28 +479,179 @@ export default async function decorate(block) {
       window.URL.revokeObjectURL(url);
     }
   }
-  
+
+  // EDS Validation functionality
+  async function validateDomainAndCheckEDS(domain) {
+    const normalizedDomain = WebsiteCrawler.normalizeDomain(domain);
+    const validationResult = container.querySelector('.validation-result');
+    const startBtn = container.querySelector('.start-crawl-btn');
+
+    // Clear any existing crawl results and hide containers
+    resultsContainer.style.display = 'none';
+    resultsContainer.innerHTML = '';
+    progressContainer.style.display = 'none';
+    
+    // Disable start button immediately
+    startBtn.disabled = true;
+    startBtn.textContent = 'Start Crawling';
+
+    validationResult.style.display = 'block';
+    validationResult.innerHTML = '<div class="validation-loading">🔍 Validating domain and checking for EDS...</div>';
+
+    try {
+      // Test if domain is accessible
+      const testUrl = `${normalizedDomain}/`;
+
+      // Since we can't reliably check domain accessibility due to CORS,
+      // we'll proceed directly to content fetching for EDS detection
+      let isEDS = false;
+      let pageContent = '';
+
+      try {
+        const pageResponse = await fetch(testUrl, {
+          method: 'GET',
+          mode: 'cors',
+        });
+
+        if (pageResponse.ok) {
+          pageContent = await pageResponse.text();
+        }
+      } catch (corsError) {
+        // If CORS fails, try with proxy for EDS detection
+        try {
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(testUrl)}`;
+          const proxyResponse = await fetch(proxyUrl);
+          const proxyData = await proxyResponse.json();
+          if (proxyData.contents) {
+            pageContent = proxyData.contents;
+          }
+        } catch (proxyError) {
+          console.warn('Could not fetch page content for EDS detection:', proxyError);
+        }
+      }
+
+      // Check for EDS indicators
+      if (pageContent) {
+        isEDS = pageContent.includes('aem.js')
+                || pageContent.includes('/scripts/aem.js')
+                || pageContent.includes('aem.live')
+                || pageContent.includes('hlx.live')
+                || pageContent.includes('franklin');
+      }
+
+      // Display validation results
+      validationResult.innerHTML = `
+        <div class="validation-success">
+          <div class="domain-status">
+            ✅ <strong>Domain Accessible:</strong> ${normalizedDomain}
+          </div>
+          <div class="eds-status ${isEDS ? 'eds-detected' : 'eds-not-detected'}">
+            ${isEDS ? '🚀 <strong>EDS Detected:</strong> This appears to be an Edge Delivery Services site!' : '⚠️ <strong>EDS Not Detected:</strong> This doesn\'t appear to be an EDS site (no aem.js found).'}
+          </div>
+          ${isEDS ? '<div class="eds-info">💡 Perfect for comprehensive crawling with AEM-specific optimizations.</div>' : '<div class="eds-info">❌ This crawler is designed specifically for EDS sites. Please try an EDS website.</div>'}
+        </div>
+      `;
+
+      // Only enable start button if EDS is detected
+      startBtn.disabled = !isEDS;
+      startBtn.textContent = isEDS ? 'Start Crawling' : 'EDS Site Required';
+      return { valid: true, isEDS, domain: normalizedDomain };
+    } catch (error) {
+      validationResult.innerHTML = `
+        <div class="validation-error">
+          ❌ <strong>Validation Failed:</strong> ${error.message}
+          <div class="error-details">Please check the domain and try again.</div>
+        </div>
+      `;
+      startBtn.disabled = true;
+      return { valid: false, isEDS: false, domain: normalizedDomain };
+    }
+  }
+
   // Initialize crawler
   let crawler = null;
-  
+  let currentDomain = targetDomain;
+  let isValidatedDomain = false;
+  let isEDSDetected = false;
+
   // Event handlers
-  header.querySelector('.start-crawl-btn').addEventListener('click', async () => {
-    const btn = header.querySelector('.start-crawl-btn');
-    
-    if (!crawler || !crawler.isRunning) {
-      btn.textContent = 'Stop Crawling';
-      btn.style.backgroundColor = '#d73502';
-      resultsContainer.style.display = 'none';
-      
-      crawler = new WebsiteCrawler(targetDomain);
-      await crawler.start();
-      
-      btn.textContent = 'Start Crawling';
-      btn.style.backgroundColor = '';
+  const domainInput = header.querySelector('#domain-input');
+  const validateBtn = header.querySelector('.validate-btn');
+  const startBtn = header.querySelector('.start-crawl-btn');
+
+  // Validate button handler
+  validateBtn.addEventListener('click', async () => {
+    const domain = domainInput.value.trim();
+    if (!domain) {
+      alert('Please enter a domain to validate.');
+      return;
+    }
+
+    validateBtn.disabled = true;
+    validateBtn.textContent = 'Validating...';
+
+    const result = await validateDomainAndCheckEDS(domain);
+
+    validateBtn.disabled = false;
+    validateBtn.textContent = 'Validate & Check EDS';
+
+    if (result.valid) {
+      currentDomain = result.domain;
+      isValidatedDomain = true;
+      isEDSDetected = result.isEDS;
     } else {
-      crawler.stop();
-      btn.textContent = 'Start Crawling';
-      btn.style.backgroundColor = '';
+      isValidatedDomain = false;
+      isEDSDetected = false;
     }
   });
+
+  // Input change handler
+  domainInput.addEventListener('input', () => {
+    isValidatedDomain = false;
+    isEDSDetected = false;
+    startBtn.disabled = true;
+    startBtn.textContent = 'Start Crawling';
+    const validationResult = container.querySelector('.validation-result');
+    validationResult.style.display = 'none';
+  });
+
+  // Start crawling button handler
+  startBtn.addEventListener('click', async () => {
+    if (!isValidatedDomain) {
+      alert('Please validate the domain first by clicking "Validate & Check EDS".');
+      return;
+    }
+
+    if (!isEDSDetected) {
+      alert('This crawler is designed specifically for Adobe Edge Delivery Services (EDS) websites. Please use an EDS site.');
+      return;
+    }
+
+    if (!crawler || !crawler.isRunning) {
+      startBtn.textContent = 'Stop Crawling';
+      startBtn.style.backgroundColor = '#d73502';
+      resultsContainer.style.display = 'none';
+
+      crawler = new WebsiteCrawler(currentDomain);
+      await crawler.start();
+
+      startBtn.textContent = 'Start Crawling';
+      startBtn.style.backgroundColor = '';
+    } else {
+      crawler.stop();
+      startBtn.textContent = 'Start Crawling';
+      startBtn.style.backgroundColor = '';
+    }
+  });
+
+  // Initial validation if default domain is provided
+  if (targetDomain) {
+    validateDomainAndCheckEDS(targetDomain).then((result) => {
+      if (result.valid) {
+        currentDomain = result.domain;
+        isValidatedDomain = true;
+        isEDSDetected = result.isEDS;
+      }
+    });
+  }
 }

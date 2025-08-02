@@ -1,9 +1,12 @@
 # Static Website Crawler Block
 
-A comprehensive EDS (Edge Delivery Services) block that crawls websites to discover all internal and external URLs. Perfect for site audits, link analysis, SEO purposes, and website migration planning.
+A comprehensive EDS (Edge Delivery Services) block that crawls websites to discover all internal and external URLs. **Specifically designed for Adobe Edge Delivery Services websites** - perfect for site audits, link analysis, SEO purposes, and website migration planning.
 
 ## Features
 
+- **🌐 Dynamic Domain Input**: Enter any website URL with real-time validation
+- **🚀 EDS Detection**: Automatically detects if a website is built with Adobe Edge Delivery Services
+- **🔒 EDS-Only Restriction**: Only allows crawling of verified Edge Delivery Services websites
 - **🔍 Comprehensive Discovery**: Finds URLs from HTML content, sitemaps, and structured data
 - **🎯 Smart Filtering**: Automatically separates internal pages from external links
 - **🔧 CORS Handling**: Uses fallback proxy services when direct access is blocked
@@ -18,6 +21,34 @@ A comprehensive EDS (Edge Delivery Services) block that crawls websites to disco
 2. The block will be automatically available for use in your pages
 
 ## Usage
+
+### Basic Usage with Dynamic Input
+
+1. **Add the block to your page**:
+   ```html
+   <div class="static-website"></div>
+   ```
+
+2. **Enter a website URL** in the input field
+3. **Click "Validate & Check EDS"** to verify the domain and detect EDS
+4. **Click "Start Crawling"** to begin discovery
+
+### EDS Detection & Restriction
+
+The crawler automatically detects Edge Delivery Services websites by checking for:
+- `aem.js` script files
+- `aem.live` domains
+- `hlx.live` domains  
+- Franklin framework indicators
+
+**🔒 Important**: This crawler is designed specifically for EDS websites. Only sites that are detected as EDS will be allowed to proceed with crawling.
+
+### Validation Features
+
+- ✅ **Domain Accessibility**: Verifies the domain can be reached
+- 🚀 **EDS Detection**: Shows if the site uses Adobe Edge Delivery Services
+- 🔒 **EDS Restriction**: Only enables crawling for verified EDS websites
+- ⚠️ **Error Handling**: Clear error messages for invalid domains and non-EDS sites
 
 ### Basic Usage
 

@@ -120,7 +120,10 @@ When direct requests fail due to CORS:
 
 ### 🔄 Current Status
 - ✅ **Fully Functional** - Complete crawler implementation
-- ✅ **Production Ready** - Error handling and edge cases covered
+- ✅ **Production Ready** - Error handling and edge cases covered  
+- ✅ **EDS-Only Restriction** - Completed requirement to only crawl EDS websites
+- ✅ **Dynamic Input System** - Replaced hardcoded domain with validation workflow
+- ✅ **Comprehensive EDS Detection** - Automatic detection of Edge Delivery Services
 - ✅ **Well Documented** - Comprehensive README and code comments
 - ✅ **Tested** - Working with AEM development server
 - ✅ **Responsive** - Mobile and desktop compatible
