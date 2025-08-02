@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Website Crawler Demo</title>
+    <link rel="stylesheet" href="./styles/styles.css">
+    <link rel="stylesheet" href="./blocks/static-website/static-website.css">
+</head>
+<body>
+    <main>
+        <div class="section">
+            <div class="default-content-wrapper">
+                <h1>Website Crawler Demo</h1>
+                <p>This demo shows how to use the static website crawler block to crawl and discover all URLs from a website.</p>
+                
+                <h2>How to Use</h2>
+                <p>The block can be configured by providing a domain URL. Here are some examples:</p>
+                
+                <h3>Example 1: Default Configuration</h3>
+                <p>The block will use the default domain if no configuration is provided:</p>
+            </div>
+            
+            <!-- Static Website Crawler Block - Default -->
+            <div class="static-website">
+                <div>
+                    <div>Domain</div>
+                    <div>https://main--gattex--onetakeda.aem.live/</div>
+                </div>
+            </div>
+            
+            <div class="default-content-wrapper">
+                <h3>Example 2: Custom Domain</h3>
+                <p>You can specify a different domain to crawl:</p>
+            </div>
+            
+            <!-- Static Website Crawler Block - Custom Domain -->
+            <div class="static-website">
+                <div>
+                    <div>URL</div>
+                    <div>https://www.adobe.com</div>
+                </div>
+            </div>
+            
+            <div class="default-content-wrapper">
+                <h2>Features</h2>
+                <ul>
+                    <li><strong>Comprehensive Crawling:</strong> Discovers URLs from HTML content, sitemaps, and various link sources</li>
+                    <li><strong>CORS Handling:</strong> Uses proxy services when direct requests are blocked by CORS</li>
+                    <li><strong>Internal vs External:</strong> Separates internal pages from external links</li>
+                    <li><strong>Export Functionality:</strong> Download results as text or JSON files</li>
+                    <li><strong>Rate Limiting:</strong> Respectful crawling with delays between requests</li>
+                    <li><strong>Error Tracking:</strong> Reports errors and failed requests</li>
+                    <li><strong>Real-time Progress:</strong> Shows crawling progress and statistics</li>
+                </ul>
+                
+                <h2>Technical Details</h2>
+                <p>The crawler works by:</p>
+                <ol>
+                    <li>Starting with the provided domain URL</li>
+                    <li>Attempting to fetch and parse the sitemap.xml</li>
+                    <li>Crawling each discovered page and extracting all links</li>
+                    <li>Following internal links recursively (up to a limit)</li>
+                    <li>Categorizing links as internal or external</li>
+                    <li>Providing export options for the discovered URLs</li>
+                </ol>
+                
+                <p><strong>Note:</strong> Due to browser security restrictions (CORS), some websites may not be crawlable directly. The block attempts to use proxy services as a fallback.</p>
+            </div>
+        </div>
+    </main>
+    
+    <script type="module" src="./scripts/aem.js"></script>
+    <script type="module">
+        import { decorateBlocks, decorateSections, loadBlocks } from './scripts/aem.js';
+        
+        // Decorate sections and blocks
+        decorateSections(document.querySelector('main'));
+        decorateBlocks(document.querySelector('main'));
+        
+        // Load blocks
+        loadBlocks(document.querySelector('main'));
+    </script>
+</body>
+</html>

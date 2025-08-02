@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Static Website Crawler - EDS Block Demo">
+    <title>Static Website Crawler | EDS</title>
+    <link rel="icon" href="./favicon.ico">
+    <link rel="stylesheet" href="./styles/styles.css">
+</head>
+<body>
+    <header></header>
+    <main>
+        <div class="section">
+            <div class="default-content-wrapper">
+                <h1>Static Website Crawler</h1>
+                <p>This EDS block allows you to crawl any website and extract all internal and external URLs. Perfect for site audits, link analysis, and SEO purposes.</p>
+            </div>
+        </div>        <div class="section">
+            <div class="static-website">
+                <div>
+                    <div>Domain</div>
+                    <div>https://main--gattex--onetakeda.aem.live/</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="default-content-wrapper">
+                <h2>Features</h2>
+                <ul>
+                    <li><strong>Comprehensive Discovery:</strong> Finds URLs from HTML content, sitemaps, and structured data</li>
+                    <li><strong>Smart Filtering:</strong> Separates internal pages from external links</li>
+                    <li><strong>CORS Handling:</strong> Uses fallback proxy services when direct access is blocked</li>
+                    <li><strong>Export Capabilities:</strong> Download results as text or JSON files</li>
+                    <li><strong>Rate Limiting:</strong> Respectful crawling with configurable delays</li>
+                    <li><strong>Error Tracking:</strong> Comprehensive reporting of failed requests</li>
+                </ul>
+                
+                <h2>How to Use</h2>
+                <p>To use this block in your EDS project:</p>
+                <ol>
+                    <li>Copy the <code>static-website</code> folder from <code>blocks/</code> to your project</li>
+                    <li>Add the block to your page using the standard EDS block format</li>
+                    <li>Configure the domain URL you want to crawl</li>
+                    <li>Click "Start Crawling" to begin the discovery process</li>
+                </ol>
+                
+                <h3>Block Configuration</h3>
+                <p>You can configure the crawler by adding rows to the block:</p>
+                <ul>
+                    <li><strong>Domain:</strong> The website URL to crawl (required)</li>
+                    <li><strong>URL:</strong> Alternative parameter name for the domain</li>
+                </ul>
+                
+                <h3>Technical Implementation</h3>
+                <p>The crawler works by:</p>
+                <ol>
+                    <li>Starting with the provided domain URL</li>
+                    <li>Attempting to fetch and parse sitemap.xml files</li>
+                    <li>Crawling each discovered page to extract all links</li>
+                    <li>Following internal links recursively (with a safety limit)</li>
+                    <li>Categorizing discovered URLs as internal or external</li>
+                    <li>Providing comprehensive export options</li>
+                </ol>
+                
+                <p><em>Note: Due to browser CORS policies, some websites may not be crawlable directly. The block includes fallback mechanisms using proxy services.</em></p>
+            </div>
+        </div>
+    </main>
+    <footer></footer>
+    
+    <script type="module" src="./scripts/scripts.js"></script>
+</body>
+</html>
